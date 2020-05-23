@@ -7,23 +7,18 @@
 void Render(sf::RenderWindow& _window, const std::vector<int>& _collection, const unsigned _swappedIndex) {
 	// We must clear the window each time around the loop
 	_window.clear();
+	const float size{ 7.5f };
 	for (unsigned i = 0; i < _collection.size(); ++i) {
-		sf::RectangleShape rectangle({ 4, static_cast<float>(_collection[i] + 1) });
+		sf::RectangleShape rectangle({ size, 4.f * static_cast<float>(_collection[i] + 1) });
 		rectangle.setOrigin(0, rectangle.getGlobalBounds().height);
 		if(i == _swappedIndex)
 		{
 			rectangle.setFillColor(sf::Color::Green);
-		}else if(i == _swappedIndex + 1)
-		{
-			rectangle.setFillColor(sf::Color::Yellow);
-		}else if(i == _swappedIndex - 1)
-		{
-			rectangle.setFillColor(sf::Color::Red);
 		}
 		else {
 			rectangle.setFillColor(sf::Color::White);
 		}
-		rectangle.setPosition(static_cast<float>(i + i), _window.getSize().y);
+		rectangle.setPosition(static_cast<float>(i + i*size), _window.getSize().y);
 		_window.draw(rectangle);
 	}
 	// Get the window to display its contents
@@ -69,6 +64,25 @@ void BubbleSort(std::vector<int>& _collection, sf::RenderWindow& _window) {
 	}
 }
 
+void SelectionSort(std::vector<int>& _collection, sf::RenderWindow& _window)
+{
+	for(int i = 0; i < _collection.size(); ++i)
+	{
+		int minIndex = i;
+		for(int j = i + 1; j < _collection.size(); ++j)
+		{
+			if(_collection[j] < _collection[minIndex])
+			{
+				minIndex = j;
+			}
+
+			Swap(_collection, minIndex, i);
+			Render(_window, _collection, i);
+			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+		}
+	}
+}
+
 
 int main() {
 	srand(static_cast<unsigned>(time(nullptr)));
@@ -78,7 +92,7 @@ int main() {
 	std::cout << "SnakeGame: Starting" << std::endl;
 
 	std::vector<int> numbers;
-	GenerateNumbersList(400, numbers);
+	GenerateNumbersList(100, numbers);
 	RandomiseList(numbers);
 
 
@@ -101,7 +115,7 @@ int main() {
 
 
 
-		BubbleSort(numbers, window);
+		SelectionSort(numbers, window);
 
 
 	}
