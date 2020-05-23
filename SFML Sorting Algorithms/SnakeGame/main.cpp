@@ -11,12 +11,12 @@ void Render(const std::vector<int>& _collection, const unsigned _swappedIndex, i
 	//set the text
 	_comparisonsText.setString("Comparisons : " + std::to_string(_comparisonsCount));
 	_window.draw(_comparisonsText);
-	
+
 	_arrayAccessesText.setString("Accesses : " + std::to_string(_arrayAccessesCount));
 	_arrayAccessesText.setPosition({ _window.getSize().x - _arrayAccessesText.getGlobalBounds().width, 0 });
 
 	_window.draw(_arrayAccessesText);
-	
+
 	const float rectangleWidth{ static_cast<float>(_window.getSize().x) / _collection.size() - 1 };
 	for (unsigned i = 0; i < _collection.size(); ++i) {
 		//std::cout << _collection[i] << " ";
@@ -185,6 +185,44 @@ void InsertionSort(std::vector<int>& _collection, int& _comparisonsCount, int& _
 	}
 }
 
+int Partition(std::vector<int>& _collection, int _low, int _high, int& _comparisonsCount, int& _arrayAccessesCount, sf::Text& _comparisonsText, sf::Text& _arrayAccessesText, sf::RenderWindow& _window) {
+	const int pivot = _collection[_high]; // pivot
+	_arrayAccessesCount++;
+	
+	int i = (_low - 1); // Index of smaller element  
+
+	for (int j = _low; j <= _high - 1; j++) {
+		// If current element is smaller than the pivot  
+		if (_collection[j] < pivot) {
+			_arrayAccessesCount++;
+			_comparisonsCount++;
+			
+			i++; // increment index of smaller element
+
+			_arrayAccessesCount++;
+			Swap(_collection, i, j);
+
+			Render(_collection, j, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
+			std::this_thread::sleep_for(std::chrono::milliseconds(5));
+		}
+	}
+	Swap(_collection, i + 1, _high);
+	_arrayAccessesCount++;
+	Render(_collection, _high, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
+	std::this_thread::sleep_for(std::chrono::milliseconds(5));
+	return (i + 1);
+}
+
+void QuickSort(std::vector<int>& _collection, int _low, int _high, int& _comparisonsCount, int& _arrayAccessesCount, sf::Text& _comparisonsText, sf::Text& _arrayAccessesText, sf::RenderWindow& _window) {
+	if (_low < _high) {
+		const auto partitionIndex = Partition(_collection, _low, _high, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
+
+		//seperately sort elements before and after the partition
+		QuickSort(_collection, _low, partitionIndex - 1, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
+		QuickSort(_collection, partitionIndex + 1, _high, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
+	}
+}
+
 
 int main() {
 	sf::Font font;
@@ -193,7 +231,7 @@ int main() {
 	sf::Text comparisonsText("Comparisons: 0", font);
 	sf::Text arrayAccessesText("Array Accesses: 0", font);
 
-	
+
 	int comparisons{ 0 };
 	int arrayAccesses{ 0 };
 
@@ -211,7 +249,7 @@ int main() {
 	RandomiseList(numbers);
 
 
-	std::cout << "Which algorithm would you like to see? Bubble sort(1), Selection Sort(2), Insertion Sort(3) or Merge Sort(4)?" << std::endl;
+	std::cout << "Which algorithm would you like to see? Bubble sort(1), Selection Sort(2), Insertion Sort(3), Merge Sort(4) or QuickSort(5)?" << std::endl;
 	int choice;
 	std::cin >> choice;
 
@@ -252,6 +290,10 @@ int main() {
 			case 4:
 				std::cout << "Alright, Merge Sort it is...." << std::endl;
 				MergeSort(numbers, 0, numbers.size() - 1, comparisons, arrayAccesses, comparisonsText, arrayAccessesText, window);
+				break;
+			case 5:
+				std::cout << "Alright, Quick Sort it is...." << std::endl;
+				QuickSort(numbers, 0, numbers.size() - 1, comparisons, arrayAccesses, comparisonsText, arrayAccessesText, window);
 				break;
 			default:
 				std::cout << "We don't... We don't do that here..." << std::endl;
