@@ -75,6 +75,7 @@ void BubbleSort(std::vector<int>& _collection, int& _comparisonsCount, int& _arr
 			break;
 		}
 	}
+	Render(_collection, 0, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
 }
 
 void SelectionSort(std::vector<int>& _collection, int& _comparisonsCount, int& _arrayAccessesCount, sf::Text& _comparisonsText, sf::Text& _arrayAccessesText, sf::RenderWindow& _window) {
@@ -93,6 +94,7 @@ void SelectionSort(std::vector<int>& _collection, int& _comparisonsCount, int& _
 			std::this_thread::sleep_for(std::chrono::milliseconds(1));
 		}
 	}
+	Render(_collection, 0, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
 }
 
 void Merge(std::vector<int>& _collection, const int _left, const int _middle, const int _right, int& _comparisonsCount, int& _arrayAccessesCount, sf::Text& _comparisonsText, sf::Text& _arrayAccessesText, sf::RenderWindow& _window) {
@@ -164,6 +166,7 @@ void MergeSort(std::vector<int>& _collection, const int _left, const int _right,
 		//merge the halves
 		Merge(_collection, _left, middle, _right, _comparisonsCount, _arrayAccessesCount, _arrayAccessesText, _comparisonsText, _window);
 	}
+	Render(_collection, 0, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
 }
 
 
@@ -183,12 +186,13 @@ void InsertionSort(std::vector<int>& _collection, int& _comparisonsCount, int& _
 		}
 		_collection[j + 1] = key;
 	}
+	Render(_collection, 0, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
 }
 
 int Partition(std::vector<int>& _collection, int _low, int _high, int& _comparisonsCount, int& _arrayAccessesCount, sf::Text& _comparisonsText, sf::Text& _arrayAccessesText, sf::RenderWindow& _window) {
 	const int pivot = _collection[_high]; // pivot
 	_arrayAccessesCount++;
-	
+
 	int i = (_low - 1); // Index of smaller element  
 
 	for (int j = _low; j <= _high - 1; j++) {
@@ -196,7 +200,7 @@ int Partition(std::vector<int>& _collection, int _low, int _high, int& _comparis
 		if (_collection[j] < pivot) {
 			_arrayAccessesCount++;
 			_comparisonsCount++;
-			
+
 			i++; // increment index of smaller element
 
 			_arrayAccessesCount++;
@@ -221,6 +225,61 @@ void QuickSort(std::vector<int>& _collection, int _low, int _high, int& _compari
 		QuickSort(_collection, _low, partitionIndex - 1, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
 		QuickSort(_collection, partitionIndex + 1, _high, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
 	}
+	Render(_collection, 0, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
+}
+
+void Heapify(std::vector<int>& _collection, int _size, int _index, int& _comparisonsCount, int& _arrayAccessesCount, sf::Text& _comparisonsText, sf::Text& _arrayAccessesText, sf::RenderWindow& _window) {
+	int largest = _index; // Initialize largest as root 
+	const int left = 2 * _index + 1; // left = 2*i + 1 
+	const int right = 2 * _index + 2; // right = 2*i + 2 
+
+	// If left child is larger than root 
+	if (left < _size && _collection[left] > _collection[largest]) {
+		_arrayAccessesCount += 2;
+		_comparisonsCount += 2;
+		largest = left;
+	}
+
+	// If right child is larger than largest so far 
+	if (right < _size && _collection[right] > _collection[largest]) {
+		_arrayAccessesCount += 2;
+		_comparisonsCount += 2;
+		largest = right;
+	}
+
+	// If largest is not root 
+	if (largest != _index) {
+		_comparisonsCount++;
+		Swap(_collection, _index, largest);
+		_arrayAccessesCount++;
+		Render(_collection, largest, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
+		std::this_thread::sleep_for(std::chrono::milliseconds(3));
+
+		// Recursively heapify the affected sub-tree 
+		Heapify(_collection, _size, largest, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
+	}
+}
+
+void HeapSort(std::vector<int>& _collection, int& _comparisonsCount, int& _arrayAccessesCount, sf::Text& _comparisonsText, sf::Text& _arrayAccessesText, sf::RenderWindow& _window) {
+	// Build heap (rearrange array) 
+	for (int i = _collection.size() / 2 - 1; i >= 0; i--) {
+		Heapify(_collection, _collection.size(), i, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
+	}
+	// One by one extract an element from heap 
+	for (int i = _collection.size() - 1; i >= 0; i--) {
+		// Move current root to end 
+		Swap(_collection, 0, i);
+		_arrayAccessesCount++;
+		Render(_collection, i, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
+		std::this_thread::sleep_for(std::chrono::milliseconds(3));
+
+
+		// call max heapify on the reduced heap 
+		Heapify(_collection, i, 0, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
+	}
+
+	Render(_collection, 0, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
+	std::this_thread::sleep_for(std::chrono::milliseconds(3));
 }
 
 
@@ -294,6 +353,10 @@ int main() {
 			case 5:
 				std::cout << "Alright, Quick Sort it is...." << std::endl;
 				QuickSort(numbers, 0, numbers.size() - 1, comparisons, arrayAccesses, comparisonsText, arrayAccessesText, window);
+				break;
+			case 6:
+				std::cout << "Alright, Heap Sort it is...." << std::endl;
+				HeapSort(numbers, comparisons, arrayAccesses, comparisonsText, arrayAccessesText, window);
 				break;
 			default:
 				std::cout << "We don't... We don't do that here..." << std::endl;
