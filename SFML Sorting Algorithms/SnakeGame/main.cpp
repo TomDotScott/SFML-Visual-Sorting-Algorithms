@@ -282,6 +282,35 @@ void HeapSort(std::vector<int>& _collection, int& _comparisonsCount, int& _array
 	std::this_thread::sleep_for(std::chrono::milliseconds(3));
 }
 
+void ShellSort(std::vector<int>& _collection, int _size, int& _comparisonsCount, int& _arrayAccessesCount, sf::Text& _comparisonsText, sf::Text& _arrayAccessesText, sf::RenderWindow& _window) {
+	// Start with a big gap, then reduce the gap 
+	for (int gap = _size / 2; gap > 0; gap /= 2) {
+		// Do a gapped insertion sort for this gap size. 
+		for (int i = gap; i < _size; i += 1) {
+			// add arr[i] to the elements that have been gap sorted 
+			// save arr[i] in temp and make a hole at position i 
+			const int temp = _collection[i];
+			_arrayAccessesCount++;
+			Render(_collection, i, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
+			std::this_thread::sleep_for(std::chrono::milliseconds(3));
+			
+			// shift earlier gap-sorted elements up until the correct location for arr[i] is found 
+			int j;
+			for (j = i; j >= gap && _collection[j - gap] > temp; j -= gap) {
+				_comparisonsCount++;
+				_arrayAccessesCount+=3;
+				_collection[j] = _collection[j - gap];
+			}
+
+			// put temp (the original arr[i]) in its correct location 
+			_collection[j] = temp;
+			_arrayAccessesCount++;
+		}
+		Render(_collection, gap, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
+		std::this_thread::sleep_for(std::chrono::milliseconds(3));
+	}
+	Render(_collection, 0, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
+}
 
 int main() {
 	sf::Font font;
@@ -290,82 +319,101 @@ int main() {
 	sf::Text comparisonsText("Comparisons: 0", font);
 	sf::Text arrayAccessesText("Array Accesses: 0", font);
 
-
-	int comparisons{ 0 };
-	int arrayAccesses{ 0 };
-
+	int height, width;
+	
 	srand(static_cast<unsigned>(time(nullptr)));
-
+	int choice;
 	std::cout << "WELCOME TO THE AMAZING SORTING ALGORITHMS VISUALISER" << std::endl;
 
-	//choose amount of items
-	std::cout << "How many items would you like to compare?" << std::endl;
-	int amount{ 0 };
-	std::cin >> amount;
+	std::cout << "Enter your desired window width" << std::endl;
+	std::cin >> width;
 
-	std::vector<int> numbers;
-	GenerateNumbersList(amount, numbers);
-	RandomiseList(numbers);
+	std::cout << "Enter your desired window height" << std::endl;
+	std::cin >> height;
+
+	
+	do {		
+		//choose amount of items
+		std::cout << "How many items would you like to compare?" << std::endl;
+		int amount{ 0 };
+		std::cin >> amount;
+
+		std::vector<int> numbers;
+		GenerateNumbersList(amount, numbers);
+		RandomiseList(numbers);
 
 
-	std::cout << "Which algorithm would you like to see? Bubble sort(1), Selection Sort(2), Insertion Sort(3), Merge Sort(4) or QuickSort(5)?" << std::endl;
-	int choice;
-	std::cin >> choice;
+		std::cout <<
+			"Which algorithm would you like to see?\n1 - Bubble sort\n2 - Selection Sort\n3 - Insertion Sort\n4 - Merge Sort\n5 - QuickSort\n6 - Heap Sort\n7 - Shell Sort"
+			<< std::endl;
+		std::cin >> choice;
 
 
-	sf::RenderWindow window((sf::VideoMode(960, 540)), "Visual Sorting Algorithms");
-	comparisonsText.setPosition(0, 0);
+		sf::RenderWindow window((sf::VideoMode(width, height)), "The Amazing Sorting Algorithms Visualiser");
+		comparisonsText.setPosition(0, 0);
 
-	bool complete{ false };
-	// Main loop that continues until we call window.close()
-	while (window.isOpen()) {
-		// Handle any pending SFML events
-		// These cover keyboard, mouse,joystick etc.
-		sf::Event e{};
-		while (window.pollEvent(e)) {
-			switch (e.type) {
-			case sf::Event::Closed:
-				window.close();
-				break;
-			default:
-				break;
+		bool complete{ false };
+		int comparisons{ 0 };
+		int arrayAccesses{ 0 };
+
+		// Main loop that continues until we call window.close()
+		while (window.isOpen()) {
+			// Handle any pending SFML events
+			// These cover keyboard, mouse,joystick etc.
+			sf::Event e{};
+			while (window.pollEvent(e)) {
+				switch (e.type) {
+				case sf::Event::Closed:
+					window.close();
+					break;
+				default:
+					break;
+				}
 			}
+
+			if (!complete) {
+				switch (choice) {
+				case 1:
+					std::cout << "Alright, Bubble Sort it is...." << std::endl;
+					BubbleSort(numbers, comparisons, arrayAccesses, comparisonsText, arrayAccessesText, window);
+					break;
+				case 2:
+					std::cout << "Alright, Selection Sort it is...." << std::endl;
+					SelectionSort(numbers, comparisons, arrayAccesses, comparisonsText, arrayAccessesText, window);
+					break;
+				case 3:
+					std::cout << "Alright, Insertion Sort it is...." << std::endl;
+					InsertionSort(numbers, comparisons, arrayAccesses, comparisonsText, arrayAccessesText, window);
+					break;
+				case 4:
+					std::cout << "Alright, Merge Sort it is...." << std::endl;
+					MergeSort(numbers, 0, numbers.size() - 1, comparisons, arrayAccesses, comparisonsText, arrayAccessesText, window);
+					break;
+				case 5:
+					std::cout << "Alright, Quick Sort it is...." << std::endl;
+					QuickSort(numbers, 0, numbers.size() - 1, comparisons, arrayAccesses, comparisonsText, arrayAccessesText, window);
+					break;
+				case 6:
+					std::cout << "Alright, Heap Sort it is...." << std::endl;
+					HeapSort(numbers, comparisons, arrayAccesses, comparisonsText, arrayAccessesText, window);
+					break;
+				case 7:
+					std::cout << "Alright, Shell Sort it is...." << std::endl;
+					ShellSort(numbers, numbers.size() - 1, comparisons, arrayAccesses, comparisonsText, arrayAccessesText, window);
+					break;
+				default:
+					std::cout << "We don't... We don't do that here..." << std::endl;
+				}
+				complete = true;
+			}
+
+			std::this_thread::sleep_for(std::chrono::seconds(5));
+			window.close();
 		}
 
-		if (!complete) {
-			switch (choice) {
-			case 1:
-				std::cout << "Alright, Bubble Sort it is...." << std::endl;
-				BubbleSort(numbers, comparisons, arrayAccesses, comparisonsText, arrayAccessesText, window);
-				break;
-			case 2:
-				std::cout << "Alright, Selection Sort it is...." << std::endl;
-				SelectionSort(numbers, comparisons, arrayAccesses, comparisonsText, arrayAccessesText, window);
-				break;
-			case 3:
-				std::cout << "Alright, Insertion Sort it is...." << std::endl;
-				InsertionSort(numbers, comparisons, arrayAccesses, comparisonsText, arrayAccessesText, window);
-				break;
-			case 4:
-				std::cout << "Alright, Merge Sort it is...." << std::endl;
-				MergeSort(numbers, 0, numbers.size() - 1, comparisons, arrayAccesses, comparisonsText, arrayAccessesText, window);
-				break;
-			case 5:
-				std::cout << "Alright, Quick Sort it is...." << std::endl;
-				QuickSort(numbers, 0, numbers.size() - 1, comparisons, arrayAccesses, comparisonsText, arrayAccessesText, window);
-				break;
-			case 6:
-				std::cout << "Alright, Heap Sort it is...." << std::endl;
-				HeapSort(numbers, comparisons, arrayAccesses, comparisonsText, arrayAccessesText, window);
-				break;
-			default:
-				std::cout << "We don't... We don't do that here..." << std::endl;
-			}
-			complete = true;
-		}
-	}
-
-	std::cout << "SnakeGame: Finished" << std::endl;
+		std::cout << "Would you like to go again? 1 for yes, 2 for no" << std::endl;
+		std::cin >> choice;
+	} while (choice == 1);
 
 	return 0;
 }
