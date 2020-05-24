@@ -4,7 +4,7 @@
 #include <SFML/Graphics.hpp>
 
 
-void Render(const std::vector<int>& _collection, const unsigned _swappedIndex, int& _comparisonsCount, int& _arrayAccessesCount, sf::Text& _comparisonsText, sf::Text& _arrayAccessesText, sf::RenderWindow& _window) {
+void Render(const std::vector<int>& _collection, const size_t _swappedIndex, const int _waitTime, int& _comparisonsCount, int& _arrayAccessesCount, sf::Text& _comparisonsText, sf::Text& _arrayAccessesText, sf::RenderWindow& _window) {
 	// We must clear the window each time around the loop
 	_window.clear();
 
@@ -20,22 +20,27 @@ void Render(const std::vector<int>& _collection, const unsigned _swappedIndex, i
 	const float rectangleWidth{ static_cast<float>(_window.getSize().x) / _collection.size() - 1 };
 	for (unsigned i = 0; i < _collection.size(); ++i) {
 		//std::cout << _collection[i] << " ";
-		sf::RectangleShape rectangle({ rectangleWidth, (static_cast<float>(_collection[i] + 1) / _collection.size()) * (_window.getSize().y - 100) });
+		sf::RectangleShape rectangle({
+			rectangleWidth,
+			(static_cast<float>(_collection[i] + 1) / _collection.size()) * (static_cast<float>(_window.getSize().y) - 100)
+		});
 		rectangle.setOrigin(0, rectangle.getGlobalBounds().height);
 		if (i == _swappedIndex) {
 			rectangle.setFillColor(sf::Color::Green);
 		} else {
 			rectangle.setFillColor(sf::Color::White);
 		}
-		rectangle.setPosition(static_cast<float>(i + i * rectangleWidth), _window.getSize().y);
+		rectangle.setPosition(static_cast<float>(i) + static_cast<float>(i) * rectangleWidth,
+		                      static_cast<float>(_window.getSize().y));
 		_window.draw(rectangle);
 	}
 	//std:: cout << std::endl;
 	// Get the window to display its contents
 	_window.display();
+	std::this_thread::sleep_for(std::chrono::milliseconds(_waitTime));
 }
 
-void Swap(std::vector<int>& _collection, const unsigned _indexA, const unsigned _indexB) {
+void Swap(std::vector<int>& _collection, const size_t _indexA, const size_t _indexB) {
 	const int temp = _collection[_indexA];
 	_collection[_indexA] = _collection[_indexB];
 	_collection[_indexB] = temp;
@@ -60,29 +65,28 @@ void BubbleSort(std::vector<int>& _collection, int& _comparisonsCount, int& _arr
 	for (unsigned i = 0; i < _collection.size() - 1; ++i) {
 		_arrayAccessesCount++;
 		bool swapped = false;
-		for (unsigned j = 0; j < _collection.size() - i - 1; ++j) {
+		for (size_t j = 0; j < _collection.size() - i - 1; ++j) {
 			_arrayAccessesCount++;
 			if (_collection[j] > _collection[j + 1]) {
 				_comparisonsCount++;
-				Swap(_collection, j, j + 1);
+				Swap(_collection, static_cast<unsigned>(j), static_cast<unsigned>(j + 1));
 				_arrayAccessesCount++;
 				swapped = true;
-				Render(_collection, j + 1, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
-				std::this_thread::sleep_for(std::chrono::milliseconds(2));
+				Render(_collection, j + 1, 2, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
 			}
 		}
 		if (!swapped) {
 			break;
 		}
 	}
-	Render(_collection, 0, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
+	Render(_collection, 0, 2, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
 }
 
 void SelectionSort(std::vector<int>& _collection, int& _comparisonsCount, int& _arrayAccessesCount, sf::Text& _comparisonsText, sf::Text& _arrayAccessesText, sf::RenderWindow& _window) {
-	for (int i = 0; i < _collection.size(); ++i) {
+	for (unsigned i = 0; i < _collection.size(); ++i) {
 		_arrayAccessesCount++;
-		int minIndex = i;
-		for (int j = i + 1; j < _collection.size(); ++j) {
+		auto minIndex = i;
+		for (unsigned j = i + 1; j < _collection.size(); ++j) {
 			_arrayAccessesCount++;
 			if (_collection[j] < _collection[minIndex]) {
 				_comparisonsCount++;
@@ -90,36 +94,35 @@ void SelectionSort(std::vector<int>& _collection, int& _comparisonsCount, int& _
 			}
 			Swap(_collection, minIndex, i);
 			_arrayAccessesCount++;
-			Render(_collection, i, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
-			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			Render(_collection, i, 1, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
 		}
 	}
-	Render(_collection, 0, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
+	Render(_collection, 0, 1, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
 }
 
-void Merge(std::vector<int>& _collection, const int _left, const int _middle, const int _right, int& _comparisonsCount, int& _arrayAccessesCount, sf::Text& _comparisonsText, sf::Text& _arrayAccessesText, sf::RenderWindow& _window) {
-	const int size1 = _middle - _left + 1;
-	const int size2 = _right - _middle;
+void Merge(std::vector<int>& _collection, const size_t _left, const size_t _middle, const size_t _right, int& _comparisonsCount, int& _arrayAccessesCount, sf::Text& _comparisonsText, sf::Text& _arrayAccessesText, sf::RenderWindow& _window) {
+	const auto size1 = _middle - _left + 1;
+	const auto size2 = _right - _middle;
 
 	//create temporary vectors
 	std::vector<int> left(size1);
 	std::vector<int> right(size2);
-
+	
 	//copy data into the temporary vectors
-	for (int i = 0; i < size1; ++i) {
+	for (unsigned long long i = 0; i < size1; ++i) {
 		_arrayAccessesCount++;
 		left[i] = _collection[_left + i];
 	}
 
-	for (int j = 0; j < size2; j++) {
+	for (unsigned long long j = 0; j < size2; j++) {
 		_arrayAccessesCount++;
 		right[j] = _collection[_middle + 1 + j];
 	}
 
 	//merge the temporary arrays into the main array
-	int i{ 0 };
-	int j{ 0 };
-	int k{ _left };
+	unsigned long long i{ 0 };
+	unsigned long long j{ 0 };
+	auto k{ _left };
 
 	while (i < size1 && j < size2) {
 		_arrayAccessesCount++;
@@ -132,8 +135,7 @@ void Merge(std::vector<int>& _collection, const int _left, const int _middle, co
 			_collection[k] = right[j];
 			++j;
 		}
-		Render(_collection, k, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
-		std::this_thread::sleep_for(std::chrono::milliseconds(20));
+		Render(_collection, k, 20, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
 		++k;
 	}
 
@@ -154,9 +156,9 @@ void Merge(std::vector<int>& _collection, const int _left, const int _middle, co
 	}
 }
 
-void MergeSort(std::vector<int>& _collection, const int _left, const int _right, int& _comparisonsCount, int& _arrayAccessesCount, sf::Text& _comparisonsText, sf::Text& _arrayAccessesText, sf::RenderWindow& _window) {
+void MergeSort(std::vector<int>& _collection, const size_t _left, const size_t _right, int& _comparisonsCount, int& _arrayAccessesCount, sf::Text& _comparisonsText, sf::Text& _arrayAccessesText, sf::RenderWindow& _window) {
 	if (_left < _right) {
-		const int middle = (_left + _right) / 2;
+		const auto middle = (_left + _right) / 2;
 
 		//sort the first half
 		MergeSort(_collection, _left, middle, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
@@ -166,36 +168,35 @@ void MergeSort(std::vector<int>& _collection, const int _left, const int _right,
 		//merge the halves
 		Merge(_collection, _left, middle, _right, _comparisonsCount, _arrayAccessesCount, _arrayAccessesText, _comparisonsText, _window);
 	}
-	Render(_collection, 0, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
+	Render(_collection, 0, 5, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
 }
 
 
 void InsertionSort(std::vector<int>& _collection, int& _comparisonsCount, int& _arrayAccessesCount, sf::Text& _comparisonsText, sf::Text& _arrayAccessesText, sf::RenderWindow& _window) {
-	for (int i = 1; i < _collection.size(); i++) {
+	for (unsigned i = 1; i < _collection.size(); i++) {
 		_arrayAccessesCount++;
-		int key = _collection[i];
+		const int key = _collection[i];
 		_arrayAccessesCount++;
-		int j = i - 1;
+		size_t j = i - 1;
 		while (j >= 0 && _collection[j] > key) {
 			_comparisonsCount++;
 			_arrayAccessesCount++;
-			_collection[j + 1] = _collection[j];
+			_collection[1 + j] = _collection[j];
 			j -= 1;
-			Render(_collection, key, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
-			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			Render(_collection, key, 1, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
 		}
 		_collection[j + 1] = key;
 	}
-	Render(_collection, 0, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
+	Render(_collection, 0, 1, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
 }
 
-int Partition(std::vector<int>& _collection, int _low, int _high, int& _comparisonsCount, int& _arrayAccessesCount, sf::Text& _comparisonsText, sf::Text& _arrayAccessesText, sf::RenderWindow& _window) {
+size_t Partition(std::vector<int>& _collection, size_t _low, size_t _high, int& _comparisonsCount, int& _arrayAccessesCount, sf::Text& _comparisonsText, sf::Text& _arrayAccessesText, sf::RenderWindow& _window) {
 	const int pivot = _collection[_high]; // pivot
 	_arrayAccessesCount++;
 
-	int i = (_low - 1); // Index of smaller element  
+	auto i = (_low - 1); // Index of smaller element  
 
-	for (int j = _low; j <= _high - 1; j++) {
+	for (auto j = _low; j <= _high - 1; j++) {
 		// If current element is smaller than the pivot  
 		if (_collection[j] < pivot) {
 			_arrayAccessesCount++;
@@ -206,18 +207,16 @@ int Partition(std::vector<int>& _collection, int _low, int _high, int& _comparis
 			_arrayAccessesCount++;
 			Swap(_collection, i, j);
 
-			Render(_collection, j, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
-			std::this_thread::sleep_for(std::chrono::milliseconds(5));
+			Render(_collection, j, 5, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
 		}
 	}
 	Swap(_collection, i + 1, _high);
 	_arrayAccessesCount++;
-	Render(_collection, _high, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
-	std::this_thread::sleep_for(std::chrono::milliseconds(5));
+	Render(_collection, _high, 5, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
 	return (i + 1);
 }
 
-void QuickSort(std::vector<int>& _collection, int _low, int _high, int& _comparisonsCount, int& _arrayAccessesCount, sf::Text& _comparisonsText, sf::Text& _arrayAccessesText, sf::RenderWindow& _window) {
+void QuickSort(std::vector<int>& _collection, size_t _low, size_t _high, int& _comparisonsCount, int& _arrayAccessesCount, sf::Text& _comparisonsText, sf::Text& _arrayAccessesText, sf::RenderWindow& _window) {
 	if (_low < _high) {
 		const auto partitionIndex = Partition(_collection, _low, _high, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
 
@@ -225,13 +224,13 @@ void QuickSort(std::vector<int>& _collection, int _low, int _high, int& _compari
 		QuickSort(_collection, _low, partitionIndex - 1, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
 		QuickSort(_collection, partitionIndex + 1, _high, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
 	}
-	Render(_collection, 0, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
+	Render(_collection, 0, 5, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
 }
 
-void Heapify(std::vector<int>& _collection, int _size, int _index, int& _comparisonsCount, int& _arrayAccessesCount, sf::Text& _comparisonsText, sf::Text& _arrayAccessesText, sf::RenderWindow& _window) {
-	int largest = _index; // Initialize largest as root 
-	const int left = 2 * _index + 1; // left = 2*i + 1 
-	const int right = 2 * _index + 2; // right = 2*i + 2 
+void Heapify(std::vector<int>& _collection, const size_t _size, const size_t _index, int& _comparisonsCount, int& _arrayAccessesCount, sf::Text& _comparisonsText, sf::Text& _arrayAccessesText, sf::RenderWindow& _window) {
+	auto largest = _index; // Initialize largest as root 
+	const auto left = 2 * _index + 1; // left = 2*i + 1 
+	const auto right = 2 * _index + 2; // right = 2*i + 2 
 
 	// If left child is larger than root 
 	if (left < _size && _collection[left] > _collection[largest]) {
@@ -252,8 +251,7 @@ void Heapify(std::vector<int>& _collection, int _size, int _index, int& _compari
 		_comparisonsCount++;
 		Swap(_collection, _index, largest);
 		_arrayAccessesCount++;
-		Render(_collection, largest, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
-		std::this_thread::sleep_for(std::chrono::milliseconds(3));
+		Render(_collection, largest, 3, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
 
 		// Recursively heapify the affected sub-tree 
 		Heapify(_collection, _size, largest, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
@@ -262,40 +260,36 @@ void Heapify(std::vector<int>& _collection, int _size, int _index, int& _compari
 
 void HeapSort(std::vector<int>& _collection, int& _comparisonsCount, int& _arrayAccessesCount, sf::Text& _comparisonsText, sf::Text& _arrayAccessesText, sf::RenderWindow& _window) {
 	// Build heap (rearrange array) 
-	for (int i = _collection.size() / 2 - 1; i >= 0; i--) {
+	for (int i = static_cast<int>(_collection.size()) / 2 - 1; i >= 0; i--) {
 		Heapify(_collection, _collection.size(), i, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
 	}
 	// One by one extract an element from heap 
-	for (int i = _collection.size() - 1; i >= 0; i--) {
+	for (int i = static_cast<int>(_collection.size()) - 1; i >= 0; i--) {
 		// Move current root to end 
 		Swap(_collection, 0, i);
 		_arrayAccessesCount++;
-		Render(_collection, i, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
-		std::this_thread::sleep_for(std::chrono::milliseconds(3));
-
+		Render(_collection, i, 3, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
 
 		// call max heapify on the reduced heap 
 		Heapify(_collection, i, 0, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
 	}
 
-	Render(_collection, 0, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
-	std::this_thread::sleep_for(std::chrono::milliseconds(3));
+	Render(_collection, 0, 3, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
 }
 
-void ShellSort(std::vector<int>& _collection, int _size, int& _comparisonsCount, int& _arrayAccessesCount, sf::Text& _comparisonsText, sf::Text& _arrayAccessesText, sf::RenderWindow& _window) {
+void ShellSort(std::vector<int>& _collection, const size_t _size, int& _comparisonsCount, int& _arrayAccessesCount, sf::Text& _comparisonsText, sf::Text& _arrayAccessesText, sf::RenderWindow& _window) {
 	// Start with a big gap, then reduce the gap 
-	for (int gap = _size / 2; gap > 0; gap /= 2) {
+	for (auto gap = _size / 2; gap > 0; gap /= 2) {
 		// Do a gapped insertion sort for this gap size. 
-		for (int i = gap; i < _size; i += 1) {
+		for (auto i = gap; i < _size; i += 1) {
 			// add arr[i] to the elements that have been gap sorted 
 			// save arr[i] in temp and make a hole at position i 
 			const int temp = _collection[i];
 			_arrayAccessesCount++;
-			Render(_collection, i, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
-			std::this_thread::sleep_for(std::chrono::milliseconds(3));
+			Render(_collection, i,5, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
 			
 			// shift earlier gap-sorted elements up until the correct location for arr[i] is found 
-			int j;
+			size_t j;
 			for (j = i; j >= gap && _collection[j - gap] > temp; j -= gap) {
 				_comparisonsCount++;
 				_arrayAccessesCount+=3;
@@ -306,13 +300,57 @@ void ShellSort(std::vector<int>& _collection, int _size, int& _comparisonsCount,
 			_collection[j] = temp;
 			_arrayAccessesCount++;
 		}
-		Render(_collection, gap, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
-		std::this_thread::sleep_for(std::chrono::milliseconds(3));
+		Render(_collection, gap, 5, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
 	}
-	Render(_collection, 0, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
+	Render(_collection, 0, 0, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
 }
 
-int main() {
+
+int GetNextGap(int _gap) {
+	// Shrink gap by Shrink factor 
+	_gap = (_gap * 10) / 13;
+
+	if (_gap < 1) {
+		return 1;
+	}
+	return _gap;
+}
+
+// Function to sort a[0..n-1] using Comb Sort 
+void CombSort(std::vector<int>& _collection, const size_t _size, int& _comparisonsCount, int& _arrayAccessesCount, sf::Text& _comparisonsText, sf::Text& _arrayAccessesText, sf::RenderWindow& _window) {
+	// Initialize gap 
+	auto gap = _size;
+
+	// Initialize swapped as true to make sure that 
+	// loop runs 
+	bool swapped = true;
+
+	// Keep running while gap is more than 1 and last 
+	// iteration caused a swap 
+	while (gap != 1 || swapped) {
+		// Find next gap 
+		gap = GetNextGap(static_cast<int>(gap));
+
+		// Initialize swapped as false so that we can 
+		// check if swap happened or not 
+		swapped = false;
+
+		// Compare all elements with current gap 
+		for (unsigned i = 0; i < _size - gap; i++) {
+			if (_collection[i] > _collection[i + gap]) {
+				_comparisonsCount++;
+				Swap(_collection, i, i + gap);
+				_arrayAccessesCount += 3;
+				swapped = true;
+
+				Render(_collection, i + gap, 10, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
+			}
+		}
+	}
+}
+
+int main()
+{
 	sf::Font font;
 	font.loadFromFile("font.ttf");
 
@@ -344,7 +382,7 @@ int main() {
 
 
 		std::cout <<
-			"Which algorithm would you like to see?\n1 - Bubble sort\n2 - Selection Sort\n3 - Insertion Sort\n4 - Merge Sort\n5 - QuickSort\n6 - Heap Sort\n7 - Shell Sort"
+			"Which algorithm would you like to see?\n1 - Bubble sort\n2 - Selection Sort\n3 - Insertion Sort\n4 - Merge Sort\n5 - QuickSort\n6 - Heap Sort\n7 - Shell Sort\n8 - Comb Sort"
 			<< std::endl;
 		std::cin >> choice;
 
@@ -400,6 +438,10 @@ int main() {
 				case 7:
 					std::cout << "Alright, Shell Sort it is...." << std::endl;
 					ShellSort(numbers, numbers.size() - 1, comparisons, arrayAccesses, comparisonsText, arrayAccessesText, window);
+					break;
+				case 8:
+					std::cout << "Alright, Comb Sort it is...." << std::endl;
+					CombSort(numbers, numbers.size() - 1, comparisons, arrayAccesses, comparisonsText, arrayAccessesText, window);
 					break;
 				default:
 					std::cout << "We don't... We don't do that here..." << std::endl;
