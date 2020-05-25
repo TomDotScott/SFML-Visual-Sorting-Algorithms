@@ -396,6 +396,24 @@ void TimSort(std::vector<int>& _collection, const size_t _size, const size_t _ru
 	Render(_collection, 0, 0, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
 }
 
+void SlowSort(std::vector<int>& _collection, const int _left, const int _right, int& _comparisonsCount, int& _arrayAccessesCount, sf::Text& _comparisonsText, sf::Text& _arrayAccessesText, sf::RenderWindow& _window) {
+	if (_left >= _right) {
+		_comparisonsCount++;
+		return;
+	}
+	const int m = _left + (_right - _left) / 2; 
+	SlowSort(_collection, _left, m, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
+	SlowSort(_collection, m + 1, _right, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
+	if (_collection[_right] < _collection[m]) {
+		_comparisonsCount++;
+		_arrayAccessesCount += 2;
+		Swap(_collection, m, _right);
+		_arrayAccessesCount += 2;
+		Render(_collection, m, 3, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
+	}
+	SlowSort(_collection, _left, _right - 1, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
+}
+
 int main() {
 	sf::Font font;
 	font.loadFromFile("font.ttf");
@@ -428,7 +446,7 @@ int main() {
 
 
 		std::cout <<
-			"Which algorithm would you like to see?\n1 - Bubble sort\n2 - Selection Sort\n3 - Insertion Sort\n4 - Merge Sort\n5 - QuickSort\n6 - Heap Sort\n7 - Shell Sort\n8 - Comb Sort\n9 - Tim Sort"
+			"Which algorithm would you like to see?\n1 - Bubble sort\n2 - Selection Sort\n3 - Insertion Sort\n4 - Merge Sort\n5 - QuickSort\n6 - Heap Sort\n7 - Shell Sort\n8 - Comb Sort\n9 - Tim Sort\n10 - Slow Sort"
 			<< std::endl;
 		std::cin >> choice;
 
@@ -492,6 +510,10 @@ int main() {
 				case 9:
 					std::cout << "Alright, Tim Sort it is...." << std::endl;
 					TimSort(numbers, numbers.size() - 1, 32, comparisons, arrayAccesses, comparisonsText, arrayAccessesText, window);
+					break;
+				case 10:
+					std::cout << "If you have to.... Slow Sort it is...." << std::endl;
+					SlowSort(numbers, 0, numbers.size() - 1, comparisons, arrayAccesses, comparisonsText, arrayAccessesText, window);
 					break;
 				default:
 					std::cout << "We don't... We don't do that here..." << std::endl;
