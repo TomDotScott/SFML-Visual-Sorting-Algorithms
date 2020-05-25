@@ -23,7 +23,7 @@ void Render(const std::vector<int>& _collection, const size_t _swappedIndex, con
 		sf::RectangleShape rectangle({
 			rectangleWidth,
 			(static_cast<float>(_collection[i] + 1) / _collection.size()) * (static_cast<float>(_window.getSize().y) - 100)
-		});
+			});
 		rectangle.setOrigin(0, rectangle.getGlobalBounds().height);
 		if (i == _swappedIndex) {
 			rectangle.setFillColor(sf::Color::Green);
@@ -31,7 +31,7 @@ void Render(const std::vector<int>& _collection, const size_t _swappedIndex, con
 			rectangle.setFillColor(sf::Color::White);
 		}
 		rectangle.setPosition(static_cast<float>(i) + static_cast<float>(i) * rectangleWidth,
-		                      static_cast<float>(_window.getSize().y));
+			static_cast<float>(_window.getSize().y));
 		_window.draw(rectangle);
 	}
 	//std:: cout << std::endl;
@@ -46,6 +46,9 @@ void Swap(std::vector<int>& _collection, const size_t _indexA, const size_t _ind
 	_collection[_indexB] = temp;
 }
 
+size_t Min(const size_t _left, const size_t _right) {
+	return _left < _right ? _left : _right;
+}
 
 void GenerateNumbersList(const int _amount, std::vector<int>& _collection) {
 	_collection.reserve(_amount);
@@ -107,7 +110,7 @@ void Merge(std::vector<int>& _collection, const size_t _left, const size_t _midd
 	//create temporary vectors
 	std::vector<int> left(size1);
 	std::vector<int> right(size2);
-	
+
 	//copy data into the temporary vectors
 	for (unsigned long long i = 0; i < size1; ++i) {
 		_arrayAccessesCount++;
@@ -188,6 +191,23 @@ void InsertionSort(std::vector<int>& _collection, int& _comparisonsCount, int& _
 		_collection[j + 1] = key;
 	}
 	Render(_collection, 0, 1, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
+}
+
+void InsertionSort(std::vector<int>& _collection, const int _left, const int _right, int& _comparisonsCount, int& _arrayAccessesCount, sf::Text& _comparisonsText, sf::Text& _arrayAccessesText, sf::RenderWindow& _window) {
+	for (int i = _left + 1; i <= _right; i++) {
+		const int temp = _collection[i];
+		int j = i - 1;
+		while (j >= _left && _collection[j] > temp) {
+			_comparisonsCount += 2;
+			_collection[j + 1] = _collection[j];
+			_arrayAccessesCount += 2;
+			j--;
+			Render(_collection, j, 5, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
+		}
+		_collection[j + 1] = temp;
+		_arrayAccessesCount++;
+		Render(_collection, j, 5, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
+	}
 }
 
 size_t Partition(std::vector<int>& _collection, size_t _low, size_t _high, int& _comparisonsCount, int& _arrayAccessesCount, sf::Text& _comparisonsText, sf::Text& _arrayAccessesText, sf::RenderWindow& _window) {
@@ -286,13 +306,13 @@ void ShellSort(std::vector<int>& _collection, const size_t _size, int& _comparis
 			// save arr[i] in temp and make a hole at position i 
 			const int temp = _collection[i];
 			_arrayAccessesCount++;
-			Render(_collection, i,5, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
-			
+			Render(_collection, i, 5, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
+
 			// shift earlier gap-sorted elements up until the correct location for arr[i] is found 
 			size_t j;
 			for (j = i; j >= gap && _collection[j - gap] > temp; j -= gap) {
 				_comparisonsCount++;
-				_arrayAccessesCount+=3;
+				_arrayAccessesCount += 3;
 				_collection[j] = _collection[j - gap];
 			}
 
@@ -349,8 +369,34 @@ void CombSort(std::vector<int>& _collection, const size_t _size, int& _compariso
 	}
 }
 
-int main()
-{
+void TimSort(std::vector<int>& _collection, const size_t _size, const size_t _runSize, int& _comparisonsCount, int& _arrayAccessesCount, sf::Text& _comparisonsText, sf::Text& _arrayAccessesText, sf::RenderWindow& _window) {
+	// Sort individual subarrays of size RUN 
+	for (size_t i = 0; i < _size; i += _runSize) {
+		InsertionSort(_collection, i, Min(i + _runSize - 1, _size - 1), _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
+	}
+
+	// start merging from size RUN (or 32). It will merge 
+	// to form size 64, then 128, 256 and so on .... 
+	for (auto size = _runSize; size < _size; size = 2 * size) {
+		// pick starting point of left sub array. We 
+		// are going to merge arr[left..left+size-1] 
+		// and arr[left+size, left+2*size-1] 
+		// After every merge, we increase left by 2*size 
+		for (size_t left = 0; left < _size; left += 2 * size) {
+			// find ending point of left sub array 
+			// mid+1 is starting point of right sub array 
+			const auto mid = left + size - 1;
+			const auto right = Min((left + 2 * size - 1), (_size - 1));
+
+			// merge sub array arr[left.....mid] & 
+			// arr[mid+1....right] 
+			Merge(_collection, left, mid, right, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
+		}
+	}
+	Render(_collection, 0, 0, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _window);
+}
+
+int main() {
 	sf::Font font;
 	font.loadFromFile("font.ttf");
 
@@ -358,7 +404,7 @@ int main()
 	sf::Text arrayAccessesText("Array Accesses: 0", font);
 
 	int height, width;
-	
+
 	srand(static_cast<unsigned>(time(nullptr)));
 	int choice;
 	std::cout << "WELCOME TO THE AMAZING SORTING ALGORITHMS VISUALISER" << std::endl;
@@ -369,8 +415,8 @@ int main()
 	std::cout << "Enter your desired window height" << std::endl;
 	std::cin >> height;
 
-	
-	do {		
+
+	do {
 		//choose amount of items
 		std::cout << "How many items would you like to compare?" << std::endl;
 		int amount{ 0 };
@@ -382,7 +428,7 @@ int main()
 
 
 		std::cout <<
-			"Which algorithm would you like to see?\n1 - Bubble sort\n2 - Selection Sort\n3 - Insertion Sort\n4 - Merge Sort\n5 - QuickSort\n6 - Heap Sort\n7 - Shell Sort\n8 - Comb Sort"
+			"Which algorithm would you like to see?\n1 - Bubble sort\n2 - Selection Sort\n3 - Insertion Sort\n4 - Merge Sort\n5 - QuickSort\n6 - Heap Sort\n7 - Shell Sort\n8 - Comb Sort\n9 - Tim Sort"
 			<< std::endl;
 		std::cin >> choice;
 
@@ -442,6 +488,10 @@ int main()
 				case 8:
 					std::cout << "Alright, Comb Sort it is...." << std::endl;
 					CombSort(numbers, numbers.size() - 1, comparisons, arrayAccesses, comparisonsText, arrayAccessesText, window);
+					break;
+				case 9:
+					std::cout << "Alright, Tim Sort it is...." << std::endl;
+					TimSort(numbers, numbers.size() - 1, 32, comparisons, arrayAccesses, comparisonsText, arrayAccessesText, window);
 					break;
 				default:
 					std::cout << "We don't... We don't do that here..." << std::endl;
