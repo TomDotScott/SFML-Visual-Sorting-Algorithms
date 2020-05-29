@@ -29,7 +29,6 @@ void GenerateColoursList(const int _amount, std::vector<sf::Color>& _colourList)
 		_colourList.push_back(c);
 	}
 
-	std::cout << "Finished Greens" << std::endl;
 
 	while (r > 0) {
 		r -= step;
@@ -37,7 +36,6 @@ void GenerateColoursList(const int _amount, std::vector<sf::Color>& _colourList)
 		_colourList.push_back(c);
 	}
 
-	std::cout << "Finished Reds" << std::endl;
 
 
 	while (b < 255) {
@@ -45,7 +43,6 @@ void GenerateColoursList(const int _amount, std::vector<sf::Color>& _colourList)
 		sf::Color c(r, g, b);
 		_colourList.push_back(c);
 	}
-	std::cout << "Finished Blues" << std::endl;
 
 
 	while (g > 0) {
@@ -56,10 +53,6 @@ void GenerateColoursList(const int _amount, std::vector<sf::Color>& _colourList)
 
 	int currentIndex{ 0 };
 	int counter{ 0 };
-
-	std::cout << _colourList.size() << std::endl;
-	std::cout << "Beginning clean up" << std::endl;
-
 }
 
 void GenerateNumbersList(const int _amount, std::vector<int>& _collection) {
@@ -96,7 +89,7 @@ void Render(const std::vector<int>& _collection, const size_t _swappedIndex, con
 	const float rectangleWidth{ static_cast<float>(_window.getSize().x) / _collection.size() - 1 };
 
 	const float indexratio = _coloursList.size() / _collection.size();
-	
+
 	for (unsigned i = 0; i < _collection.size(); ++i) {
 		//std::cout << _collection[i] << " ";
 		sf::RectangleShape rectangle({
@@ -104,8 +97,7 @@ void Render(const std::vector<int>& _collection, const size_t _swappedIndex, con
 			(static_cast<float>(_collection[i] + 1) / _collection.size()) * (static_cast<float>(_window.getSize().y) - 100)
 			});
 		rectangle.setOrigin(0, rectangle.getGlobalBounds().height);
-		if(i == _swappedIndex)
-		{
+		if (i == _swappedIndex) {
 			rectangle.setFillColor(sf::Color::White);
 		} else {
 			if (i != 0) {
@@ -142,7 +134,7 @@ void BubbleSort(std::vector<int>& _collection, int& _comparisonsCount, int& _arr
 				Swap(_collection, static_cast<unsigned>(j), static_cast<unsigned>(j + 1));
 				_arrayAccessesCount++;
 				swapped = true;
-				Render(_collection, j + 1, 2, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _coloursList, _window);
+				Render(_collection, j + 1, 3, _comparisonsCount, _arrayAccessesCount, _comparisonsText, _arrayAccessesText, _coloursList, _window);
 			}
 		}
 		if (!swapped) {
@@ -568,42 +560,52 @@ int main() {
 				switch (choice) {
 				case 1:
 					std::cout << "Alright, Bubble Sort it is...." << std::endl;
+					window.setTitle("The Amazing Sorting Algorithms Visualiser - Bubble Sort");
 					BubbleSort(numbers, comparisons, arrayAccesses, comparisonsText, arrayAccessesText, coloursList, window);
 					break;
 				case 2:
 					std::cout << "Alright, Selection Sort it is...." << std::endl;
+					window.setTitle("The Amazing Sorting Algorithms Visualiser - Selection Sort");
 					SelectionSort(numbers, comparisons, arrayAccesses, comparisonsText, arrayAccessesText, coloursList, window);
 					break;
 				case 3:
 					std::cout << "Alright, Insertion Sort it is...." << std::endl;
+					window.setTitle("The Amazing Sorting Algorithms Visualiser - Insertion Sort");
 					InsertionSort(numbers, comparisons, arrayAccesses, comparisonsText, arrayAccessesText, coloursList, window);
 					break;
 				case 4:
 					std::cout << "Alright, Merge Sort it is...." << std::endl;
+					window.setTitle("The Amazing Sorting Algorithms Visualiser - Merge Sort");
 					MergeSort(numbers, 0, numbers.size() - 1, comparisons, arrayAccesses, comparisonsText, arrayAccessesText, coloursList, window);
 					break;
 				case 5:
 					std::cout << "Alright, Quick Sort it is...." << std::endl;
+					window.setTitle("The Amazing Sorting Algorithms Visualiser - Quick Sort");
 					QuickSort(numbers, 0, numbers.size() - 1, comparisons, arrayAccesses, comparisonsText, arrayAccessesText, coloursList, window);
 					break;
 				case 6:
 					std::cout << "Alright, Heap Sort it is...." << std::endl;
+					window.setTitle("The Amazing Sorting Algorithms Visualiser - Heap Sort");
 					HeapSort(numbers, comparisons, arrayAccesses, comparisonsText, arrayAccessesText, coloursList, window);
 					break;
 				case 7:
 					std::cout << "Alright, Shell Sort it is...." << std::endl;
+					window.setTitle("The Amazing Sorting Algorithms Visualiser - Shell Sort");
 					ShellSort(numbers, numbers.size() - 1, comparisons, arrayAccesses, comparisonsText, arrayAccessesText, coloursList, window);
 					break;
 				case 8:
 					std::cout << "Alright, Comb Sort it is...." << std::endl;
+					window.setTitle("The Amazing Sorting Algorithms Visualiser - Comb Sort");
 					CombSort(numbers, numbers.size() - 1, comparisons, arrayAccesses, comparisonsText, arrayAccessesText, coloursList, window);
 					break;
 				case 9:
 					std::cout << "Alright, Tim Sort it is...." << std::endl;
+					window.setTitle("The Amazing Sorting Algorithms Visualiser - Tim Sort");
 					TimSort(numbers, numbers.size() - 1, 32, comparisons, arrayAccesses, comparisonsText, arrayAccessesText, coloursList, window);
 					break;
 				case 10:
 					std::cout << "If you have to.... Slow Sort it is...." << std::endl;
+					window.setTitle("The Amazing Sorting Algorithms Visualiser - Slow Sort");
 					SlowSort(numbers, 0, numbers.size() - 1, comparisons, arrayAccesses, comparisonsText, arrayAccessesText, coloursList, window);
 					break;
 				default:
